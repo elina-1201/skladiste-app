@@ -15,7 +15,7 @@ namespace Skladiste
                 string JsonFile = File.ReadAllText(FileName);
                 productList = JsonSerializer.Deserialize<List<Product>>(JsonFile);
             }
-            catch (Exception ex)
+            catch
             {
                 Console.WriteLine("There are no products yet. Please add products before taking that action.");
             }
@@ -64,17 +64,41 @@ namespace Skladiste
             return foundProduct;
         }
 
-        public static void JsonDelete(string id)
+        public static bool UpdateProductsList(string id)
         {
             Product product = FindById(id);
-            if(product != null) {
+            if (product != null)
+            {
                 Products.Remove(product);
-                string updatedJson = JsonSerializer.Serialize(Products);
+                return true;
+            }
+            else {
+                Console.WriteLine("Product with that ID is not found."); 
+                return false;
+            }
+        }
 
+        public static void JsonDelete(string id)
+        {
+            if (UpdateProductsList(id))
+            {
+                string updatedJson = JsonSerializer.Serialize(Products);
                 File.WriteAllTextAsync(FileName, updatedJson);
                 Console.WriteLine($"Product with ID: {id} is successfully deleted.");
             }
-           else { Console.WriteLine("Product with that ID is not found."); }
+            else { return; }
+        }
+
+        public static void JsonUpdate(Product product)
+        {
+            if(UpdateProductsList(product.Id))
+            {
+                Products.Add(product);
+                string updatedJson = JsonSerializer.Serialize(Products);
+                File.WriteAllTextAsync(FileName, updatedJson);
+                Console.WriteLine($"Product with ID: {product.Id} is successfully updated.");
+            }
+            else { return; }
         }
 
         public static void ShowNotInStock()
